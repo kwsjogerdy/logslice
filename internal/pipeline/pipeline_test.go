@@ -68,6 +68,38 @@ func TestPipeline_FilterExcludes(t *testing.T) {
 	}
 }
 
+// TestPipeline_OutputContents verifies that the lines written to the output
+// file match the lines that were not excluded by the filter.
+func TestPipeline_OutputContents(t *testing.T) {
+	input := writeTempFile(t, "keep this line\ndrop secret line\nkeep another\n")
+	output := filepath.Join(t.TempDir(), "out.log")
+
+	cfg := Config{
+		Exclude:    []string{"secret"},
+		InputFile:  input,
+		OutputFile: output,
+	}
+	p, err := New(cfg)
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	if _, err := p.Run(context.Background()); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	data, err := os.ReadFile(output)
+	if err != nil {
+		t.Fatalf("ReadFile: %v", err)
+	}
+	got := string(data)
+	if strings.Contains(got, "secret") {
+		t.Errorf("output should not contain excluded line, got: %q", got)
+	}
+	if !strings.Contains(got, "keep this line") || !strings.Contains(got, "keep another") {
+		t.Errorf("output missing expected lines, got: %q", got)
+	}
+}
+
 func TestStats_String(t *testing.T) {
 	s := Stats{Read: 10, Filtered: 3, Written: 7}
 	got := s.String()
