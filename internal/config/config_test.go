@@ -47,3 +47,11 @@ func TestValidate_EmptyConfig(t *testing.T) {
 		t.Fatalf("empty config should be valid, got: %v", err)
 	}
 }
+
+func TestValidate_MultipleBlankInclude(t *testing.T) {
+	// Ensure validation catches blank patterns even when mixed with valid ones.
+	cfg := &Config{Include: []string{"ERROR", "", "WARN"}}
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected error when include slice contains a blank pattern")
+	}
+}
