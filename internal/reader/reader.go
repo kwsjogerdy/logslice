@@ -81,6 +81,12 @@ func Stdin() io.ReadCloser {
 	return os.Stdin
 }
 
+// IsCompressed reports whether the given file path appears to be a compressed
+// file based on its extension. Currently only gzip (.gz) is supported.
+func IsCompressed(path string) bool {
+	return strings.HasSuffix(strings.ToLower(path), ".gz")
+}
+
 // gzipReadCloser wraps a gzip.Reader and its underlying file so that both are
 // closed when Close is called.
 type gzipReadCloser struct {
